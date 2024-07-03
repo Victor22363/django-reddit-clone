@@ -1,0 +1,14 @@
+<a href="{% url 'index' %}"">Go back</a>
+
+{% if question %}
+    <h1>{{ question.question_text }} {{question.votes}}</h1>
+    {% if question_answers %}
+        {% for ans in question_answers%}
+            <h3>{{ans.text}} {{ans.votes}}</h3>    
+        {% endfor %}
+    {%else%}
+        <p>There are still no answers</p>
+    {%endif%}
+{% else %}
+    <p>This poll is currently unavailable.</p>
+{% endif %}
