@@ -1,9 +1,11 @@
 {% if latest_question_list %}
     <ul>
     {% for question in latest_question_list %}
-        <li><a href="/polls/{{ question.id }}/">{{ question.question_text }} {{question.votes}}</a></li>
+        <li><a href="{{ question.id }}/">{{ question.question_text }} {{question.votes}} likes</a></li>
     {% endfor %}
     </ul>
+
 {% else %}
     <p>No polls are available.</p>
 {% endif %}
+<p><a href="{% url 'ask_question' %}">Do you have a question? Then click here to post one.</a></p>

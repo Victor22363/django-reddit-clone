@@ -1,14 +1,136 @@
-<a href="{% url 'index' %}"">Go back</a>
+<a href="{% url 'index' %}">Go back</a>
 
 {% if question %}
-    <h1>{{ question.question_text }} {{question.votes}}</h1>
+    <h1>{{ question.question_text }} <form class="vote-form" data-question-id="{{ question.id }}">
+        {% csrf_token %}
+        <button type="submit" class="vote-button">Like</button>
+        <span class="vote-count" id="vote-count-{{ question.id }}">{{ question.votes }}</span>
+    </form></h1>
+    <form method="post" class="post" data-question-id="{{ question.id }}">
+        {% csrf_token %}
+        <p>Do you want to post an answer?</p>
+        <input class="text" name="text" type="text">
+        <button class="post-answer" type="submit">Post Answer</button>
+    </form>
     {% if question_answers %}
         {% for ans in question_answers%}
-            <h3>{{ans.text}} {{ans.votes}}</h3>    
+            <h3>{{ans.text}} <form class="vote-form-answer" data-question-id="{{ ans.id }}">
+                {% csrf_token %}
+                <button type="submit" class="vote-button-answer" >Like</button>
+                <span class="vote-count-answer" id="vote-count-answer-{{ ans.id }}">{{ ans.votes }}</span>
+            </form></h3>  
+            
+            
         {% endfor %}
     {%else%}
-        <p>There are still no answers</p>
+        <p>There are still no answers...</p>
+        
     {%endif%}
 {% else %}
     <p>This poll is currently unavailable.</p>
 {% endif %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const voteForms = document.querySelectorAll('.vote-form');
+    voteForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();  // Prevent form from submitting normally
+                        
+            const questionId = this.dataset.questionId;
+            const voteCount = this.querySelector('.vote-count');
+            console.log(questionId);
+            console.log(voteCount);
+            fetch('{% url "vote_question" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'question_id': questionId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                voteCount.textContent = data.votes;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const voteForms = document.querySelectorAll('.vote-form-answer');
+    voteForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();  // Prevent form from submitting normally
+                        
+            const questionId = this.dataset.questionId;
+            const voteCount = this.querySelector('.vote-count-answer');
+            console.log(questionId);
+            console.log(voteCount);
+            fetch('{% url "vote_answer" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'question_id': questionId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                voteCount.textContent = data.votes;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const voteForms = document.querySelectorAll('.post');
+    voteForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();  // Prevent form from submitting normally
+            
+            const questionId = this.dataset.questionId;
+            const text = this.querySelector('.text').value;
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            console.log(questionId);
+            console.log(text);
+
+            const formData = new URLSearchParams({
+                'question_ref': questionId,
+                'text': text
+            });
+            console.log('Sending data:', formData.toString());
+            console.log('CSRF Token:', csrftoken);
+
+            fetch('{% url "answer_question" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'question_ref': questionId,
+                    'text': text,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                })
+                
+            })
+            .then(data => {
+                console.log('Answer posted:', data);
+                // Reload the page after the post is successful
+                window.location.reload();
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+});
+
+</script>
+{% endblock %}
