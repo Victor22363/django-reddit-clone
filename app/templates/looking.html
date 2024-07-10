@@ -3,8 +3,8 @@
 {% if question %}
     <h1>{{ question.question_text }} <form class="vote-form" data-question-id="{{ question.id }}">
         {% csrf_token %}
-        <button type="submit" class="vote-button">Like</button>
-        <span class="vote-count" id="vote-count-{{ question.id }}">{{ question.votes }}</span>
+        <button type="submit" class="vote-button">Like <span class="vote-count" id="vote-count-{{ question.id }}">{{ question.votes }}</span></button>
+        
     </form></h1>
     <form method="post" class="post" data-question-id="{{ question.id }}">
         {% csrf_token %}
@@ -16,8 +16,8 @@
         {% for ans in question_answers%}
             <h3>{{ans.text}} <form class="vote-form-answer" data-question-id="{{ ans.id }}">
                 {% csrf_token %}
-                <button type="submit" class="vote-button-answer" >Like</button>
-                <span class="vote-count-answer" id="vote-count-answer-{{ ans.id }}">{{ ans.votes }}</span>
+                <button type="submit" class="vote-button-answer" >Like <span class="vote-count-answer" id="vote-count-answer-{{ ans.id }}">{{ ans.votes }}</span></button>
+                
             </form></h3>  
             
             
